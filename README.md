@@ -48,3 +48,41 @@ Status: In Progress
 ---
 
 *"Every expert was once a beginner."*
+
+# Project: The Quiet SOC
+
+## About This Project
+
+This portfolio documents my journey toward becoming a Security Operations Center (SOC) Analyst.
+
+The goal is to develop practical cybersecurity skills through investigations, labs, documentation, and real-world security scenarios.
+
+## Current Progress
+
+✅ Mission 01: Thinking Like a Security Analyst  
+✅ Mission 02: Windows as a Crime Scene  
+✅ Mission 03: Network Traffic Analysis  
+
+## Skills Being Developed
+
+- Security Operations
+- Incident Response
+- Log Analysis
+- Network Monitoring
+- Threat Detection
+- SIEM Investigation
+
+## Tools I Will Practice
+
+- Splunk
+- Wireshark
+- Microsoft Sentinel
+- Linux
+- Windows Event Viewer
+
+## Mission Log
+
+Week 01 - Foundations
+- Built analyst mindset
+- Learned evidence collection concepts
+- Introduced investigation methodology
