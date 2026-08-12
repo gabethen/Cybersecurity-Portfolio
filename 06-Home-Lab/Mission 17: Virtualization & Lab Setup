@@ -1,0 +1,57 @@
+# Mission 17 - Virtualization & Lab Setup
+
+## Objective
+
+Understand virtualization and determine how to safely build an isolated Windows environment for hands-on SOC investigations.
+
+## What I Learned
+
+Virtualization allows me to create and run a virtual machine and another operating system inside my physical computer.
+
+A virtual machine provides a controlled environment that is separated from my normal operating system. This allows me to intentionally generate activity and investigate the evidence it creates without making those changes directly on my everyday computer.
+
+## Why Isolation Matters
+
+Isolation is important in a cybersecurity home lab because I can safely create and test security-related activity inside the virtual machine.
+
+Examples include:
+
+* Failed login attempts
+* Successful logins
+* Creating user accounts
+* Running processes
+* Network connections
+* File activity
+* Security events
+
+The goal is to contain my experiments and reduce the risk of accidentally affecting my everyday computer or other systems.
+
+## Apple Silicon Consideration
+
+My Mac uses an Apple M1 processor, which uses the ARM architecture. Because of this, I need virtualization software and an operating system that are compatible with Apple Silicon/ARM.
+
+## Resource Considerations
+
+My Mac has 8 GB of RAM and approximately 46 GB of available storage. I need to manage these resources carefully so the virtual machine does not consume too much memory or storage and negatively affect my normal operating system.
+
+## Initial Investigation Goals
+
+I want my first Windows VM to help me investigate:
+
+* Windows Event Logs
+* Failed and successful logins
+* User accounts
+* Processes
+* Network connections
+* File activity
+* Security alerts
+
+I also want to expand the lab over time as I become more comfortable with these fundamentals.
+
+## Lab Goal
+
+The goal of this lab is not simply to run Windows in a virtual machine. I want to create a controlled environment where I can generate security activity, observe the resulting logs, investigate what happened, and document my findings like a SOC analyst.
+
+## Key Takeaway
+
+Virtualization provides a controlled environment for hands-on cybersecurity practice. Because my computer uses an Apple M1 processor and has limited RAM and storage, I need to choose my virtualization setup carefully and build the lab gradually.
