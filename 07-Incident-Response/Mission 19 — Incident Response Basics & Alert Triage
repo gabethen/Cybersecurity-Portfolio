@@ -1,0 +1,39 @@
+# Mission 19 — Incident Response Basics
+
+## Scenario
+
+At 2:14 AM, the SIEM generated an alert showing that user `jsmith` successfully logged in to their account. The login originated from an unfamiliar IP address and was followed by multiple failed login attempts. Shortly afterward, the account accessed a sensitive internal application that the user does not normally use.
+
+## 1. Event, Alert, or Incident?
+
+This is an **alert** because the SIEM detected potentially suspicious activity and generated an alert for investigation. It is not automatically a confirmed security incident because further investigation is needed to determine whether the activity was actually malicious.
+
+## 2. What Makes the Activity Suspicious?
+
+The multiple failed login attempts within a short period are suspicious because they could indicate password guessing or a brute-force attempt. However, the activity is not necessarily malicious because there could be a legitimate explanation, such as the user repeatedly entering the wrong password.
+
+## 3. What Information Would I Investigate Next?
+
+I would investigate the source IP address, the user's recent login history, the location and timing of the logins, and any other suspicious activity involving the account. I would also investigate what the account accessed after successfully logging in and determine whether the activity was consistent with the user's normal behavior.
+
+## 4. What Would I Do If the Account Was Compromised?
+
+If I determined that the account had been compromised, I would follow the organization's incident response procedures to contain the account. Depending on the organization's procedures and my authorization, this could include disabling the account or resetting its credentials. I would then investigate the scope of the compromise, document my findings, and escalate the incident as required.
+
+## 5. Would I Immediately Declare a Confirmed Security Incident?
+
+No. I would not immediately declare this a confirmed security incident because the activity requires further investigation. Multiple failed logins could indicate an attack, but they could also have a legitimate explanation. I would investigate the surrounding activity and only classify it as a confirmed incident if the available evidence supported that conclusion.
+
+## Key Lesson
+
+Not every security alert is automatically a security incident. A SOC analyst should investigate the available evidence, establish context, and avoid making assumptions before determining whether malicious activity has occurred.
+
+## Skills Practiced
+
+- Alert triage
+- Incident classification
+- Authentication investigation
+- IP address investigation
+- Account compromise analysis
+- Incident response fundamentals
+- Evidence-based decision making
