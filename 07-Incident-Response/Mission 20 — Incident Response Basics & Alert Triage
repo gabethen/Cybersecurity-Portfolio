@@ -1,6 +1,6 @@
 # Mission 20 — Incident Response Basics
 
-## Scenario
+## Scenario 
 
 At 2:14 AM, the SIEM generated an alert showing that user `jsmith` successfully logged in to their account. The login originated from an unfamiliar IP address and was followed by multiple failed login attempts. Shortly afterward, the account accessed a sensitive internal application that the user does not normally use.
 
