@@ -1,0 +1,429 @@
+# Mission 27 — Windows Persistence Hunt: Scheduled Tasks & Services
+
+## 🎯 Objective
+
+Investigate common Windows persistence mechanisms to determine whether suspicious or malicious activity could allow a program or attacker to execute automatically on the system.
+
+This investigation focused on:
+
+- Windows Scheduled Tasks
+- Windows Services
+- COM-based Scheduled Task handlers
+- Windows Event Log correlation
+- File signature and metadata validation
+- SHA-256 hashing
+
+---
+
+## 💻 Environment
+
+- **Operating System:** Windows 11 ARM64
+- **Architecture:** ARM64
+- **Virtualization:** UTM / QEMU
+- **Primary Tool:** PowerShell
+- **Investigation Type:** Host-based SOC investigation
+- **Investigation Date:** August 26, 2026
+
+---
+
+# 1. Investigation Hypothesis
+
+An attacker may establish persistence by creating or modifying a Scheduled Task or Windows Service that automatically executes malicious code during startup, logon, or another trigger.
+
+### Hypothesis
+
+> A suspicious Scheduled Task or Windows Service may exist on the system and provide automatic execution or persistence.
+
+---
+
+# 2. Scheduled Task Reconnaissance
+
+The initial Scheduled Task inventory was collected using PowerShell:
+
+```powershell
+Get-ScheduledTask |
+Select-Object TaskName, TaskPath, State |
+Sort-Object TaskPath, TaskName
+3. Scheduled Task Analysis
+
+Potentially interesting tasks included:
+
+MareBackup
+StartupAppTask
+LoginCheck
+SvcRestartTask
+SvcRestartTaskLogon
+SvcRestartTaskNetwork
+SpaceAgentTask
+ResolutionHost
+
+The tasks were examined for:
+
+Executable paths
+Command-line arguments
+Task authors
+Descriptions
+Triggers
+Security principals
+Task actions
+
+The investigated Microsoft tasks were consistent with legitimate Windows functionality.
+
+Initial Assessment
+
+🟢 No obvious malicious Scheduled Task identified.
+
+4. StartupAppTask Investigation
+
+StartupAppTask warranted additional review because it executes the legitimate Windows binary:
+
+%windir%\system32\rundll32.exe
+
+with the following argument:
+
+Startupscan.dll,SusRunTask
+
+The complete Scheduled Task XML was exported and reviewed.
+
+Findings
+
+The task contained:
+
+Microsoft Windows task path
+Startupscan.dll referenced from the Windows system directory
+Microsoft-associated task metadata
+Standard Windows security configuration
+No suspicious external executable
+No PowerShell execution
+No command shell execution
+No script execution
+No unusual user-writable execution path
+No randomized executable name
+
+Although rundll32.exe is a legitimate Windows binary that can be abused by attackers, the observed usage was consistent with Windows startup application scanning.
+
+Assessment
+
+🟢 Likely Benign
+
+5. SoftLanding Scheduled Tasks
+
+Three tasks under the following path were investigated:
+
+\SoftLanding\S-1-5-21-1786364922-3938108443-748931341-1001\
+
+The tasks were:
+
+SoftLandingCreativeManagementTask
+SoftLandingDeferralTask-{2c5bc6e6-31bc-4d0a-b3b9-3c0cad7a388e}
+SoftLandingTriggerTask-128000000001615609-render-{9ae905f0-cd03-42db-848c-f4af60ab46d8}
+
+These tasks used COM handlers rather than conventional executable actions.
+
+Observations
+
+The tasks:
+
+Executed in the context of the interactive user
+Used COM Handler actions
+Did not directly execute PowerShell, CMD, or scripts
+Did not expose suspicious executable paths
+Contained Windows task triggers
+Included one disabled task
+Used GUID-based COM Class IDs
+
+The associated COM Class IDs were investigated using targeted registry searches.
+
+The registry locations examined did not contain conventional CLSID registrations for the three identified Class IDs.
+
+Assessment
+
+🟡 Unresolved but insufficient evidence for malicious activity
+
+The tasks were retained as an investigation note rather than classified as malicious.
+
+6. Non-Microsoft Scheduled Task Hunt
+
+Scheduled Tasks outside the standard:
+
+\Microsoft\Windows\
+
+path were reviewed.
+
+Observed entries included:
+
+Microsoft Edge Update
+OneDrive
+Xbox Game Save
+SoftLanding tasks
+
+The entries were reviewed based on their names, paths, and configurations.
+
+No clearly malicious Scheduled Task persistence mechanism was identified.
+
+Assessment
+
+🟢 No suspicious Scheduled Task persistence identified
+
+7. Windows Service Reconnaissance
+
+Windows Services were enumerated using:
+
+Get-CimInstance Win32_Service |
+Select-Object Name, DisplayName, State, StartMode, StartName, PathName |
+Sort-Object StartMode, Name
+
+Services were evaluated based on:
+
+Service name
+Display name
+Startup mode
+Account used to run the service
+Executable path
+Whether the service used a suspicious or unusual executable
+
+Several services were selected for deeper investigation.
+
+8. Virtualization-Related Services
+
+Several services were identified as components associated with the UTM/QEMU virtual machine environment.
+
+QEMU Guest Agent
+Service: QEMU-GA
+Path: C:\Program Files\Qemu-ga\qemu-ga.exe
+Account: LocalSystem
+Start Mode: Auto
+SPICE WebDAV Proxy
+Service: spice-webdavd
+Path: C:\Program Files\SPICE webdavd\spice-webdavd.exe
+Account: LocalSystem
+Start Mode: Auto
+SPICE VDAgent
+Service: vdservice
+Path: C:\Program Files (x86)\UTM Guest Tools\ARM64\vdservice.exe
+Account: LocalSystem
+Start Mode: Auto
+Balloon Service
+Service: BalloonService
+Path: C:\Program Files (x86)\UTM Guest Tools\drivers\Balloon\w11\ARM64\blnsvr.exe
+Account: LocalSystem
+Start Mode: Auto
+
+These services were consistent with the known UTM/QEMU virtualization environment.
+
+Assessment
+
+🟢 Expected / Benign
+
+9. Additional Windows Services Reviewed
+
+Additional potentially interesting services were investigated:
+
+WSAIFabricSvc
+hpatchmon
+McpManagementService
+MicrosoftCopilotElevationService
+XtaCache
+
+Most used standard Windows svchost.exe hosting or identifiable Microsoft application paths.
+
+XtaCache received additional investigation because it automatically starts and runs as LocalSystem.
+
+10. XtaCache Investigation
+
+The XtaCache service was configured as:
+
+Service Name: XtaCache
+Display Name: XtaCache
+State: Running
+Start Mode: Auto
+Start Account: LocalSystem
+Path:
+C:\Windows\System32\XtaCache.exe
+
+An automatically started SYSTEM service can provide a powerful persistence mechanism, so the executable was investigated further.
+
+Digital Signature Validation
+
+The executable was checked using PowerShell:
+
+Get-AuthenticodeSignature "C:\Windows\System32\XtaCache.exe"
+Result
+Status: Valid
+StatusMessage: Signature verified.
+Signer: Microsoft Windows
+Organization: Microsoft Corporation
+
+This provided strong evidence that the executable was an authentic Microsoft-signed Windows component.
+
+File Metadata
+CompanyName: Microsoft Corporation
+FileDescription: XTA Cache Service
+FileVersion: 10.0.26100.1
+ProductName: Microsoft Windows Operating System
+ProductVersion: 10.0.26100.1
+OriginalFilename: XtaCache.exe.mui
+
+The metadata was consistent with a Microsoft Windows system component.
+
+SHA-256 Hash
+D66BDC10A4644DA89DE7CF87CE8B6377F73A3A3282D09A04C78D04588D4AF2BD
+
+The hash was recorded to provide a unique cryptographic identifier for the examined file.
+
+Assessment
+
+🟢 Benign
+
+The combination of:
+
+C:\Windows\System32 location
+Valid Microsoft Windows signature
+Microsoft Corporation publisher
+Windows OS product metadata
+Identifiable XTA Cache Service description
+
+strongly supports the conclusion that XtaCache.exe is a legitimate Windows component.
+
+11. Security Event Log Correlation
+
+Windows Security Event ID 4697 was queried to identify service installation events.
+
+Command used:
+
+Get-WinEvent -FilterHashtable @{
+    LogName='Security'
+    Id=4697
+} -MaxEvents 20
+Result
+No events were found that match the specified selection criteria.
+Assessment
+
+No Event ID 4697 events were identified in the available Security log.
+
+Investigation Limitation
+
+The absence of Event ID 4697 does not prove that no services were installed.
+
+Event generation depends on appropriate Windows auditing configuration and available event-log retention.
+
+Therefore, this result was treated as a telemetry limitation, rather than definitive proof that no service installation occurred.
+
+12. Investigation Summary
+Artifact	Investigation Result	Assessment
+Microsoft Scheduled Tasks	Reviewed	🟢 No suspicious persistence
+StartupAppTask	Windows system components	🟢 Benign
+SoftLanding Tasks	COM handlers	🟡 Unresolved
+Microsoft Edge Tasks	Recognized software	🟢 Benign
+OneDrive Tasks	Recognized software	🟢 Benign
+QEMU-GA	UTM/QEMU component	🟢 Benign
+SPICE Services	UTM guest components	🟢 Benign
+BalloonService	UTM guest component	🟢 Benign
+WSAIFabricSvc	Windows service host	🟢 Likely Benign
+hpatchmon	Windows service host	🟢 Likely Benign
+McpManagementService	Windows service host	🟢 Likely Benign
+Microsoft Copilot Service	Microsoft application	🟢 Likely Benign
+XtaCache	Microsoft-signed Windows component	🟢 Benign
+Event ID 4697	No events found	⚪ Telemetry limitation
+13. Final Assessment
+🟢 No Malicious Windows Persistence Identified
+
+The investigation did not identify evidence of malicious persistence through the Scheduled Task or Windows Service mechanisms examined.
+
+Potentially unusual entries were investigated rather than automatically classified as malicious.
+
+The XtaCache service was validated using:
+
+File location
+Service configuration
+Digital signature
+Microsoft signer information
+File metadata
+SHA-256 hashing
+
+The virtualization-related services were also consistent with the known UTM/QEMU environment.
+
+No suspicious executable paths, PowerShell persistence, command-shell persistence, scripts, or clearly malicious service configurations were identified.
+
+14. Analyst Reasoning
+
+This investigation demonstrated the importance of validating suspicious-looking artifacts before assigning a malicious classification.
+
+A legitimate Windows executable such as:
+
+rundll32.exe
+
+can be abused by attackers, but the presence of the binary alone is not evidence of malicious activity.
+
+Likewise, a service running as:
+
+LocalSystem
+
+has significant privileges but is common for legitimate Windows services.
+
+The investigation therefore relied on contextual evidence including:
+
+File location
+Task/service configuration
+Execution mechanism
+Account context
+Digital signatures
+File metadata
+SHA-256 hashing
+Event log telemetry
+Known virtualization environment
+15. MITRE ATT&CK Mapping
+T1053 — Scheduled Task/Job
+
+Scheduled Tasks were investigated as a potential persistence mechanism.
+
+T1543 — Create or Modify System Process
+
+Windows Services were investigated as a potential persistence mechanism.
+
+T1218.011 — System Binary Proxy Execution: Rundll32
+
+rundll32.exe usage was reviewed because it can be abused to execute DLL-based payloads.
+
+No malicious execution was identified during this investigation.
+
+16. Investigation Limitations
+
+This investigation was performed against a Windows 11 ARM64 virtual machine and focused specifically on Scheduled Tasks and Windows Services.
+
+It was not a complete forensic examination of every Windows persistence mechanism.
+
+Additional persistence locations that could be investigated in future missions include:
+
+Registry Run/RunOnce keys
+Startup folders
+WMI Event Subscriptions
+DLL Search Order Hijacking
+Winlogon configuration
+AppInit mechanisms
+Browser extensions
+User-level persistence mechanisms
+
+Security Event ID 4697 was also unavailable in the current event log, limiting historical service-installation correlation.
+
+17. SOC Analyst Takeaways
+Key Lessons
+Persistence mechanisms should be investigated systematically.
+Unfamiliar task or service names are not automatically malicious.
+File paths provide important contextual evidence.
+SYSTEM privileges increase the importance of investigation but do not prove maliciousness.
+Legitimate Windows binaries can be abused and therefore require contextual analysis.
+Digital signatures can provide strong evidence of software authenticity.
+SHA-256 hashing provides a unique identifier for investigated files.
+Missing telemetry should be documented as a limitation.
+Environmental context is important when analyzing virtual machines.
+A SOC analyst should be comfortable closing an investigation as benign when the evidence supports that conclusion.
+18. Final Verdict
+
+Classification: 🟢 BENIGN
+
+Confidence: Moderate–High
+
+Finding:
+
+No evidence of malicious Windows persistence was identified during the investigation. Scheduled Tasks and Windows Services were reviewed, potentially suspicious artifacts were investigated, and the XtaCache.exe service was validated as a legitimate Microsoft-signed Windows component. No malicious persistence mechanism was confirmed.
