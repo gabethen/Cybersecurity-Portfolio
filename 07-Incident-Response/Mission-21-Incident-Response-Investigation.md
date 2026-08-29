@@ -1,5 +1,5 @@
 # Mission 21 — Incident Response Investigation
-
+ 
 ## Scenario
 
 A SIEM alert showed that user `jsmith` had 12 failed login attempts between 2:14 AM and 2:19 AM, followed by a successful login. The login originated from an unfamiliar IP address outside the company's known IP ranges. At 2:23 AM, the account accessed the company's HR application.
