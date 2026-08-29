@@ -1,4 +1,4 @@
-Week 6 — Mission 18
+Week 6 — Mission 18 
 Windows Event Log Investigation
 
 Date: August 13, 2026
