@@ -1,4 +1,4 @@
-# Mission 24 — Week 7 SOC Analyst Review
+# Mission 24 — SOC Analyst Review
 
 ## Objective
 
