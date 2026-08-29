@@ -1,0 +1,300 @@
+# Mission 28 — Windows PowerShell Threat Hunt
+
+## 🎯 Objective
+
+Conduct a threat hunt for potentially suspicious PowerShell activity on the Windows 11 ARM64 laboratory VM.
+
+The investigation focused on determining whether PowerShell had been used to execute potentially malicious commands, scripts, encoded content, download tools, modify security controls, or establish unauthorized persistence.
+
+The investigation examined:
+
+* Windows Security Event ID 4688
+* PowerShell Operational logs
+* PowerShell Event ID 4104
+* PowerShell script block contents
+* Suspicious PowerShell keywords and behaviors
+* Process creation telemetry
+* False-positive identification
+* Timeline correlation
+
+---
+
+## 🧠 Threat Hypothesis
+
+> An attacker may have used PowerShell to execute commands or scripts while attempting to avoid detection.
+
+The objective was to determine whether available Windows telemetry supported or disproved this hypothesis.
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **Investigation Date:** August 28, 2026
+
+---
+
+# 🔎 Investigation
+
+## 1. Windows Process Creation — Event ID 4688
+
+The Security log was queried for Event ID 4688, which records process creation.
+
+Initial results confirmed that 4688 logging was active.
+
+Example event:
+
+```text
+Time: 8/28/2026 8:18:59 PM
+Event ID: 4688
+New Process: C:\Windows\System32\lsass.exe
+Parent Process: C:\Windows\System32\wininit.exe
+Account/SID: S-1-5-18
+```
+
+The observed process relationship was consistent with normal Windows system activity.
+
+### Finding
+
+Event ID 4688 is enabled and generating process creation telemetry.
+
+However, a controlled PowerShell execution performed during the investigation did not produce an identifiable `powershell.exe` entry in the 4688 results.
+
+This represents a potential **process-level telemetry visibility gap**.
+
+---
+
+## 2. Controlled PowerShell Execution
+
+A benign PowerShell command was executed to establish a known-good baseline:
+
+```powershell
+Write-Host "Mission 28 PowerShell Test"
+```
+
+The command executed successfully.
+
+The subsequent 4688 search did not identify a corresponding PowerShell process creation event.
+
+### Finding
+
+PowerShell execution was confirmed locally, but the expected PowerShell process was not identified through the 4688 search.
+
+This demonstrates that process creation telemetry should not be relied upon as the sole source of evidence when investigating PowerShell activity.
+
+---
+
+## 3. PowerShell Operational Logging
+
+The following log was examined:
+
+```text
+Microsoft-Windows-PowerShell/Operational
+```
+
+PowerShell activity was present, including:
+
+* Event ID 40961 — PowerShell console startup
+* Event ID 40962 — PowerShell console ready
+* Event ID 53504 — PowerShell IPC activity
+* Event ID 4104 — Script Block Logging
+
+Event ID 4104 was especially important because it provided visibility into PowerShell script block activity.
+
+### Finding
+
+PowerShell Script Block Logging is enabled and actively generating telemetry on the system.
+
+---
+
+## 4. Event ID 4104 — Script Block Logging
+
+Multiple 4104 events were observed on August 28, 2026.
+
+Relevant timestamps included:
+
+```text
+8/28/2026 5:23:39 PM
+8/28/2026 5:23:40 PM
+8/28/2026 5:24:46 PM
+8/28/2026 5:41:35 PM
+8/28/2026 5:42:00 PM
+```
+
+The script contents were examined to determine whether suspicious PowerShell behavior was present.
+
+During the investigation, keyword searches were performed against the 4104 events for indicators including:
+
+* `EncodedCommand`
+* `Invoke-Expression`
+* `IEX`
+* `DownloadString`
+* `Invoke-WebRequest`
+* `FromBase64String`
+* `Net.WebClient`
+* `New-LocalUser`
+* `Add-LocalGroupMember`
+* `Set-MpPreference`
+* `Add-MpPreference`
+* `Start-BitsTransfer`
+
+---
+
+## 5. False-Positive Analysis
+
+The keyword searches initially returned several 4104 events.
+
+Further examination showed that these events contained the **investigation commands themselves**.
+
+For example, the search command contained strings such as:
+
+```text
+EncodedCommand
+DownloadString
+Invoke-WebRequest
+IEX
+Invoke-Expression
+FromBase64String
+Net.WebClient
+```
+
+PowerShell Script Block Logging recorded these commands because they were executed by the analyst during the investigation.
+
+### Finding
+
+The suspicious keyword matches were determined to be **false positives**.
+
+The presence of a suspicious keyword within a 4104 event does not by itself indicate malicious execution. The complete script context must be examined.
+
+---
+
+## 6. Historical PowerShell Activity
+
+A historical query was performed against August 28, 2026 PowerShell 4104 events.
+
+No 4104 events were identified between:
+
+```text
+8/28/2026 5:00 PM
+```
+
+and
+
+```text
+8/28/2026 5:20 PM
+```
+
+The later 4104 events observed during the investigation corresponded to commands executed as part of the threat-hunting process.
+
+### Finding
+
+No confirmed pre-existing suspicious PowerShell script activity was identified within the examined August 28 time window.
+
+---
+
+# 🕐 Timeline
+
+| Time               | Event       | Finding                         |
+| ------------------ | ----------- | ------------------------------- |
+| 5:00–5:20 PM       | 4104 search | No events identified            |
+| 5:23:39 PM         | 4104        | Investigation activity          |
+| 5:23:40 PM         | 4104        | Investigation activity          |
+| 5:24:46 PM         | 4104        | Investigation activity          |
+| 5:41:35 PM         | 4104        | Investigation activity          |
+| 5:42:00 PM         | 4104        | Investigation activity          |
+| 8:18:55–8:18:59 PM | 4688        | Normal Windows process creation |
+
+---
+
+# 🧠 Threat Assessment
+
+### Classification: 🟢 Benign
+
+The investigation did **not identify confirmed malicious PowerShell activity**.
+
+No evidence was found supporting:
+
+* Encoded PowerShell execution
+* PowerShell-based payload downloads
+* Unauthorized local account creation
+* Defender configuration changes
+* Suspicious persistence activity
+* Confirmed malicious script execution
+
+The suspicious keyword matches observed during the investigation were determined to be **false positives caused by the analyst's own search commands**.
+
+---
+
+# 🔬 Evidence
+
+### Security Event ID 4688
+
+Confirmed that process creation auditing is active.
+
+Observed normal Windows processes including:
+
+```text
+C:\Windows\System32\lsass.exe
+C:\Windows\System32\services.exe
+C:\Windows\System32\winlogon.exe
+C:\Windows\System32\csrss.exe
+C:\Windows\System32\wininit.exe
+C:\Windows\System32\smss.exe
+```
+
+### PowerShell Event ID 4104
+
+Confirmed that Script Block Logging is enabled and recording PowerShell activity.
+
+### Controlled Test
+
+```powershell
+Write-Host "Mission 28 PowerShell Test"
+```
+
+The command executed successfully but did not result in an identifiable PowerShell process within the 4688 search.
+
+---
+
+# 🛡️ Conclusion
+
+The PowerShell threat hunt did not identify evidence of malicious PowerShell execution on the Windows laboratory VM during the examined period.
+
+The investigation demonstrated that PowerShell Script Block Logging was functioning and provided useful command-level visibility. However, Security Event ID 4688 did not provide a corresponding PowerShell process event for the controlled test.
+
+A key lesson from the investigation was the importance of **contextual analysis**. Initial keyword searches produced apparent indicators of suspicious PowerShell activity, but those events were ultimately determined to be false positives because the suspicious strings existed inside the analyst's own hunting commands.
+
+The results demonstrate that threat hunters should validate suspicious indicators against the complete event context and correlate multiple telemetry sources rather than relying on keyword matches alone.
+
+---
+
+# 📚 Lessons Learned
+
+1. **Event ID 4688 provides valuable process creation telemetry, but it may not provide complete visibility by itself.**
+
+2. **PowerShell Event ID 4104 can provide important script-level visibility.**
+
+3. **Keyword matching can generate false positives.**
+
+4. **The context surrounding a suspicious command is critical when determining intent.**
+
+5. **Threat hunting should attempt to disprove a hypothesis rather than searching only for evidence that confirms it.**
+
+6. **A lack of malicious findings is still a valid threat-hunting result when the investigation was properly scoped and documented.**
+
+7. **Multiple telemetry sources should be correlated when investigating PowerShell execution.**
+
+---
+
+## 🎯 Final Result
+
+**Threat Hypothesis:** Not supported by available evidence.
+
+**Overall Assessment:** 🟢 **Benign**
+
+**Primary Security Finding:** PowerShell Script Block Logging is active, but process-level correlation through Event ID 4688 appears incomplete for the controlled PowerShell test.
+
+**Recommended Improvement:** Continue improving endpoint telemetry and correlate PowerShell Operational logs with Security process-creation events and other endpoint/network telemetry during future hunts.
