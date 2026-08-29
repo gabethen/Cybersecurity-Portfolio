@@ -1,6 +1,6 @@
 # Week 6 — Mission 19
 ## Windows Security Investigation Report
-
+ 
 **Date:** August 15, 2026  
 **Analyst:** Gabe  
 **Environment:** Windows 11 ARM64 Virtual Machine  
