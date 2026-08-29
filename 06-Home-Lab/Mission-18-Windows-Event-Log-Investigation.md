@@ -1,7 +1,7 @@
 Week 6 — Mission 18 
 Windows Event Log Investigation
 
-Date: August 13, 2026
+Date: August 13, 2026 
 Lab: Windows 11 ARM64 VM
 Objective: Investigate Windows Security Event Logs and distinguish normal system activity from potentially suspicious authentication activity.
 
