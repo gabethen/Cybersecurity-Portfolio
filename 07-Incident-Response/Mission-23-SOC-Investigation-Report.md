@@ -1,4 +1,4 @@
-# Mission 23 — Week 7 SOC Investigation Report
+# Mission 23 — SOC Investigation Report
 
 ## 1. Investigation Overview
 
