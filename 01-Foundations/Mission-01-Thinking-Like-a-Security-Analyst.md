@@ -1,5 +1,5 @@
 # Mission 01 – Thinking Like a Security Analyst
-
+ 
 ## Objective
 
 Learn how security analysts investigate incidents without making assumptions.
