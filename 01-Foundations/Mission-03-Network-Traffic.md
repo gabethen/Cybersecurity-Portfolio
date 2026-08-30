@@ -1,6 +1,6 @@
 # Mission 03: Network Traffic Analysis
 
-## Objective
+## Objective 
 Learn how security analysts examine network activity to identify suspicious behavior.
 
 ## Scenario
