@@ -1,6 +1,6 @@
 # Mission 27 — Windows Persistence Hunt: Scheduled Tasks & Services
 
-## 🎯 Objective
+## 🎯 Objective 
 
 Investigate common Windows persistence mechanisms to determine whether suspicious or malicious activity could allow a program or attacker to execute automatically on the system.
 
