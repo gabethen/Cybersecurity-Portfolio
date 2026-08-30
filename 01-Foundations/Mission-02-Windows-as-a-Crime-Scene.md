@@ -2,7 +2,7 @@
 
 ## Objective
 Learn how a security analyst investigates a Windows system after a suspected security incident.
-
+ 
 ## Scenario
 A user reports unusual activity on their computer. Your job is to treat the machine like a crime scene and collect evidence before making assumptions.
 
