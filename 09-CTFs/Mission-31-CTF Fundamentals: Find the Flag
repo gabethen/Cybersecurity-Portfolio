@@ -1,0 +1,198 @@
+# Mission 31 — CTF Fundamentals: Find the Flag
+
+## 🎯 Objective
+
+Conduct a basic Capture the Flag (CTF) investigation using Windows file-system reconnaissance.
+
+The goal was to locate a hidden CTF artifact without immediately searching for the flag itself. The investigation focused on enumeration, identifying unusual files, inspecting metadata, and validating the discovered artifact.
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **User:** Gabriel
+* **Investigation Date:** August 31, 2026
+
+---
+
+## 🧠 CTF Strategy
+
+The investigation followed a structured approach:
+
+```text
+Enumeration
+    ↓
+Identify Unusual Files
+    ↓
+Investigate Metadata
+    ↓
+Inspect Artifact
+    ↓
+Validate Flag
+```
+
+The objective was to avoid immediately searching the entire system for `FLAG{` and instead practice finding the artifact through reconnaissance.
+
+---
+
+# 🔎 Investigation
+
+## 1. User Profile Enumeration
+
+The initial reconnaissance focused on:
+
+```text
+C:\Users\Gabriel
+```
+
+Several standard Windows profile directories were identified, including:
+
+* Desktop
+* Documents
+* Downloads
+* OneDrive
+* Pictures
+* Videos
+* AppData
+
+Hidden and system files were also observed, including `NTUSER.DAT` and other Windows profile artifacts.
+
+---
+
+## 2. Targeted Directory Enumeration
+
+The following directories were inspected:
+
+```text
+C:\Users\Gabriel\Desktop
+C:\Users\Gabriel\Documents
+C:\Users\Gabriel\Downloads
+C:\Users\Gabriel\OneDrive
+```
+
+No suspicious artifacts or CTF flags were identified in these locations.
+
+The directories primarily contained normal Windows files such as:
+
+```text
+desktop.ini
+```
+
+and standard user-profile folders.
+
+---
+
+## 3. Recent-File Enumeration
+
+Because the obvious user directories did not contain the CTF artifact, a broader search for recently modified files was performed.
+
+Command used:
+
+```powershell
+Get-ChildItem C:\Users\Gabriel\AppData -File -Recurse -Force -ErrorAction SilentlyContinue |
+Sort-Object LastWriteTime -Descending |
+Select-Object -First 30 LastWriteTime, Length, FullName
+```
+
+The search returned numerous Windows and application files.
+
+One file stood out:
+
+```text
+LastWriteTime: 8/31/2026 6:11:06 PM
+Length: 72 bytes
+Path:
+C:\Users\Gabriel\AppData\Local\Microsoft\CTF\system_update_notes.txt
+```
+
+### Why it was suspicious
+
+The artifact stood out because:
+
+* It was recently modified.
+* It was significantly smaller than surrounding application and Windows files.
+* It was located in an unusual `CTF` directory.
+* The filename `system_update_notes.txt` appeared designed to resemble a legitimate system-related document.
+
+---
+
+# 🏴 Flag Validation
+
+The discovered artifact was inspected using:
+
+```powershell
+Get-Content "C:\Users\Gabriel\AppData\Local\Microsoft\CTF\system_update_notes.txt"
+```
+
+The file contained:
+
+```text
+CTF Challenge Artifact
+Classification: Internal
+FLAG{windows_recon_31}
+```
+
+### 🚩 Captured Flag
+
+```text
+FLAG{windows_recon_31}
+```
+
+---
+
+# 🧠 Analyst Assessment
+
+The file was confirmed to be the intended CTF artifact.
+
+The investigation demonstrated that a flag does not always need to be discovered through direct keyword searching. File-system reconnaissance and anomaly identification can lead to the target artifact more efficiently.
+
+---
+
+# 📚 Lessons Learned
+
+1. Begin a CTF investigation with enumeration rather than immediately searching for the flag.
+
+2. Know what normal Windows directories and artifacts look like.
+
+3. Recently modified files can provide valuable leads during a forensic investigation.
+
+4. Unusual filenames, locations, sizes, and timestamps can help identify suspicious artifacts.
+
+5. Hidden files and directories may contain relevant forensic evidence.
+
+6. Validate a suspected artifact by inspecting its contents rather than assuming it contains the flag.
+
+7. A structured investigation process reduces unnecessary searching and helps document findings clearly.
+
+---
+
+# 🎯 Final Result
+
+**Mission:** 31
+**Challenge:** CTF Fundamentals — Find the Flag
+**Result:** ✅ Completed
+**Artifact:** `system_update_notes.txt`
+**Location:** `C:\Users\Gabriel\AppData\Local\Microsoft\CTF\`
+**Flag:** `FLAG{windows_recon_31}`
+
+---
+
+## 🔐 CTF Method
+
+```text
+ENUMERATE
+    ↓
+IDENTIFY ANOMALY
+    ↓
+INSPECT ARTIFACT
+    ↓
+VALIDATE
+    ↓
+CAPTURE FLAG
+```
+
+**Mission 31 successfully completed.**
