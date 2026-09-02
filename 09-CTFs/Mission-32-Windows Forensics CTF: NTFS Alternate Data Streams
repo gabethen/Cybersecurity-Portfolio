@@ -1,0 +1,150 @@
+# Mission 32 — Windows Forensics CTF: NTFS Alternate Data Streams
+
+## 🎯 Objective
+
+Investigate a Windows file for hidden forensic data using NTFS Alternate Data Streams (ADS).
+
+The objective was to identify information that would not be visible through a standard file listing or by reading the primary file contents.
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **User:** Gabriel
+* **Investigation Date:** September 1, 2026
+
+---
+
+## 🧠 CTF Scenario
+
+A seemingly normal text file was placed on the Windows workstation.
+
+The challenge was to determine whether additional hidden data existed within the file.
+
+Target file:
+
+```text
+C:\Users\Gabriel\Desktop\meeting_notes.txt
+```
+
+---
+
+# 🔎 Investigation
+
+## 1. Initial File
+
+The visible file was created with standard text content:
+
+```text
+Northstar Systems - Meeting Notes
+```
+
+At first glance, there was no obvious indication that additional data was present.
+
+---
+
+## 2. NTFS Stream Enumeration
+
+The following command was used to enumerate all data streams associated with the file:
+
+```powershell
+Get-Item "C:\Users\Gabriel\Desktop\meeting_notes.txt" -Stream *
+```
+
+The output identified two streams:
+
+```text
+Stream: :$DATA
+Length: 35
+```
+
+and:
+
+```text
+Stream: case_notes
+Length: 29
+```
+
+The `:$DATA` stream represented the file's normal primary contents.
+
+The `case_notes` stream was an additional NTFS Alternate Data Stream.
+
+---
+
+## 3. Hidden Stream Investigation
+
+The alternate stream was read with:
+
+```powershell
+Get-Content "C:\Users\Gabriel\Desktop\meeting_notes.txt:case_notes"
+```
+
+The hidden stream contained:
+
+```text
+FLAG{ntfs_ads_forensics_32}
+```
+
+---
+
+# 🏴 Flag Captured
+
+```text
+FLAG{ntfs_ads_forensics_32}
+```
+
+---
+
+# 🧠 Analyst Assessment
+
+The challenge was successfully completed by identifying a hidden NTFS Alternate Data Stream attached to an otherwise normal text file.
+
+The artifact demonstrated that the visible contents of a file do not necessarily represent all data associated with that file.
+
+---
+
+# 📚 Lessons Learned
+
+1. Standard file inspection may not reveal all data stored within or associated with a Windows file.
+
+2. NTFS Alternate Data Streams can contain information separate from a file's primary data stream.
+
+3. The `Get-Item -Stream *` PowerShell command can be used to enumerate file streams.
+
+4. Hidden streams can contain legitimate metadata, forensic evidence, or potentially malicious content.
+
+5. File-system investigations should consider alternate data storage mechanisms when examining suspicious artifacts.
+
+6. CTF investigations are most effective when artifacts are enumerated before attempting to identify the final flag.
+
+---
+
+# 🎯 Investigation Workflow
+
+```text
+Identify File
+    ↓
+Enumerate NTFS Streams
+    ↓
+Discover `case_notes`
+    ↓
+Read Alternate Data Stream
+    ↓
+Validate Flag
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 32
+**Challenge:** Windows Forensics CTF — NTFS Alternate Data Streams
+**Technique:** NTFS Alternate Data Streams (ADS)
+**Artifact:** `meeting_notes.txt`
+**Hidden Stream:** `case_notes`
+**Result:** ✅ Completed
+**Flag:** `FLAG{ntfs_ads_forensics_32}`
