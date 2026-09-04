@@ -1,0 +1,216 @@
+# Mission 33 — Log Analysis CTF: Failed Logon Investigation
+
+## 🎯 Objective
+
+Investigate Windows Security Event ID 4625 activity and determine the number and source of failed logon attempts.
+
+The exercise focused on building a PowerShell investigation query independently rather than relying on a pre-built command.
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **User:** Gabriel
+* **Investigation Date:** September 3, 2026
+
+---
+
+# 🧩 CTF Scenario
+
+The fictional SOC received the following alert:
+
+```text
+09:14:22 — Event ID 4625
+Account: Administrator
+Logon Type: 3
+Source IP: 192.168.1.45
+
+09:14:25 — Event ID 4625
+Account: Administrator
+Logon Type: 3
+Source IP: 192.168.1.45
+
+09:14:27 — Event ID 4624
+Account: Administrator
+Logon Type: 3
+Source IP: 192.168.1.45
+```
+
+### Scenario Question
+
+> How many failed logon attempts occurred before the successful login from `192.168.1.45`?
+
+### Expected Scenario Result
+
+**2 failed logon attempts**
+
+The `192.168.1.45` address was part of the fictional CTF scenario and was not expected to exist in the actual VM telemetry.
+
+---
+
+# 🔎 Actual VM Investigation
+
+## 1. Query Event ID 4625
+
+The investigation began by querying the Security log for failed logon events.
+
+```powershell
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} |
+Measure-Object
+```
+
+### Result
+
+```text
+Count : 5
+```
+
+This established that the Windows VM contained **5 recorded Event ID 4625 events**.
+
+---
+
+## 2. Display the Failed Logon Events
+
+The following command was used to review the five events:
+
+```powershell
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} |
+Select-Object TimeCreated, Message
+```
+
+Observed timestamps included:
+
+```text
+9/3/2026 5:43:58 PM
+8/20/2026 4:51:33 PM
+8/13/2026 5:36:41 PM
+8/13/2026 5:36:34 PM
+8/13/2026 5:36:31 PM
+```
+
+---
+
+## 3. Extract Source IP Addresses
+
+Instead of manually reviewing each event, the investigation used the event message to extract the source network address.
+
+```powershell
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} |
+ForEach-Object {
+    ($_.Message -split 'Source Network Address:')[1].Split("`r`n")[0].Trim()
+}
+```
+
+### Result
+
+```text
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+```
+
+All five failed logon events originated from:
+
+```text
+127.0.0.1
+```
+
+---
+
+# 🧠 Analyst Assessment
+
+### Total Failed Logons
+
+**5**
+
+### Source
+
+**127.0.0.1**
+
+### Interpretation
+
+All five observed Event ID 4625 events originated from the local loopback address.
+
+Based on these events alone, there is **no evidence of a remote source IP** generating the failed logons.
+
+The findings therefore should not be interpreted as five separate remote authentication attacks.
+
+---
+
+# 🧪 PowerShell Skills Practiced
+
+This mission focused heavily on constructing a command independently.
+
+The investigation used:
+
+```text
+Get-WinEvent
+        ↓
+-FilterHashtable
+        ↓
+Where / ForEach processing
+        ↓
+$_.Message
+        ↓
+-split
+        ↓
+.Split()
+        ↓
+.Trim()
+        ↓
+Measure-Object
+```
+
+The exercise reinforced the concept of building PowerShell commands as a sequence of smaller operations instead of memorizing complete commands.
+
+---
+
+# 📚 Lessons Learned
+
+1. Event ID 4625 represents a failed logon attempt.
+
+2. The number of events can be determined using `Measure-Object`.
+
+3. Event messages can be parsed to extract fields that are not directly selected as PowerShell properties.
+
+4. `ForEach-Object` can be used to process individual Windows events.
+
+5. The pipeline allows multiple PowerShell operations to be chained together.
+
+6. A failed logon event should be evaluated in context rather than automatically treated as an attack.
+
+7. The source address is important when distinguishing local authentication activity from remote authentication attempts.
+
+8. CTF scenarios and real system telemetry must be kept separate when documenting an investigation.
+
+---
+
+# 🎯 Final Result
+
+**Mission:** 33
+**Challenge:** Log Analysis CTF — Failed Logon Investigation
+**Result:** ✅ Completed
+
+### Actual VM Findings
+
+```text
+Event ID 4625 Events: 5
+Source IP: 127.0.0.1
+Remote Source Identified: No
+```
+
+### CTF Scenario Answer
+
+```text
+2 failed logons before the successful login
+```
+
+### Final Assessment
+
+**No evidence of a remote failed-logon attack was identified from the five observed 4625 events.**
