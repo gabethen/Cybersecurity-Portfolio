@@ -1,0 +1,221 @@
+# Mission 35 — Multi-Stage CTF Review
+
+## 🎯 Objective
+
+Analyze a short sequence of Windows endpoint events and determine whether the observed behavior should be classified as benign, suspicious, or malicious.
+
+The exercise focused on behavioral correlation, identifying the strongest indicators, selecting appropriate next investigative steps, and making an escalation decision.
+
+---
+
+## 🧩 Scenario
+
+The following endpoint activity was observed:
+
+```text
+2:14:01 PM — User logs in
+
+2:14:08 PM — powershell.exe starts
+
+2:14:12 PM — A file appears:
+C:\Users\Gabriel\AppData\Local\Temp\update.exe
+
+2:14:15 PM — update.exe executes
+
+2:14:20 PM — A scheduled task named "SystemUpdate" is created
+
+2:14:21 PM — Task configured to run as SYSTEM
+```
+
+---
+
+# 🧠 Analyst Assessment
+
+## Classification
+
+### 🟡 Suspicious / Likely Malicious
+
+The activity was classified as suspicious because several potentially malicious behaviors occurred in a short period of time.
+
+PowerShell execution alone is not necessarily malicious, and a user login is normal activity. However, the complete behavioral sequence is significantly more concerning.
+
+---
+
+# 🔎 Behavioral Chain
+
+The strongest evidence was the relationship between the events:
+
+```text
+PowerShell
+    ↓
+update.exe appears in Temp
+    ↓
+update.exe executes
+    ↓
+Scheduled Task Created
+    ↓
+Task Runs as SYSTEM
+```
+
+The combination of **executable creation, execution, persistence, and SYSTEM-level execution** represents a high-risk behavioral chain.
+
+---
+
+# 🔬 Evidence to Investigate
+
+The investigation identified the following priority areas.
+
+## 1. `update.exe`
+
+First determine:
+
+* File hash
+* Digital signature
+* File metadata
+* Creation time
+* Parent process
+* Reputation
+
+The executable is the central artifact in the observed sequence.
+
+---
+
+## 2. `SystemUpdate` Scheduled Task
+
+Investigate:
+
+* Task name
+* Task creation time
+* Action/command
+* Trigger
+* Run-as account
+* Persistence behavior
+
+The fact that the task is configured to run as **SYSTEM** increases the potential severity.
+
+---
+
+## 3. User and Execution Context
+
+Investigate:
+
+* Which user initiated the activity
+* Whether the activity was expected
+* User privileges
+* Source IP, if applicable
+* Related authentication events
+
+The context can help distinguish legitimate administration from unauthorized activity.
+
+---
+
+# 🚨 Escalation Decision
+
+### ✅ Escalate
+
+The activity should be escalated for further investigation because the sequence suggests potential:
+
+* Payload execution
+* Persistence
+* Privilege escalation
+
+The analyst should avoid declaring confirmed malware until the executable and scheduled task are validated.
+
+---
+
+# 🧠 Analyst Reasoning
+
+The investigation reinforced the importance of evaluating **behavioral chains rather than isolated events**.
+
+For example:
+
+```text
+User Login        → Normal
+PowerShell        → Potentially Normal
+Executable        → Requires Investigation
+Scheduled Task    → Potentially Normal
+SYSTEM Execution  → High Concern
+```
+
+Viewed collectively:
+
+```text
+PowerShell
+→ Executable Execution
+→ Persistence
+→ SYSTEM Execution
+```
+
+the activity becomes significantly more suspicious.
+
+---
+
+# 📚 Lessons Learned
+
+1. PowerShell execution is not automatically malicious.
+
+2. A user login is not sufficient evidence to establish legitimacy.
+
+3. Executable creation and execution from a temporary directory should be investigated.
+
+4. Scheduled tasks can provide persistence and require contextual analysis.
+
+5. SYSTEM-level execution significantly increases the severity of a newly created persistence mechanism.
+
+6. Analysts should correlate multiple events into a timeline.
+
+7. Suspicious behavior can justify escalation before malware is conclusively confirmed.
+
+8. The best next investigative artifact is often the object connecting multiple events—in this case, `update.exe`.
+
+---
+
+# 🎯 Investigation Workflow
+
+```text
+Review Timeline
+    ↓
+Identify Behavioral Chain
+    ↓
+Locate Central Artifact
+    ↓
+Validate File
+    ↓
+Investigate Persistence
+    ↓
+Assess User Context
+    ↓
+Escalate if Warranted
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 35
+**Challenge:** Multi-Stage CTF Review
+**Result:** ✅ Completed
+
+**Classification:** 🟡 Suspicious / Likely Malicious
+
+**Primary Artifact:**
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\update.exe
+```
+
+**Persistence Mechanism:**
+
+```text
+Scheduled Task: SystemUpdate
+```
+
+**Execution Context:**
+
+```text
+SYSTEM
+```
+
+**Escalation:** ✅ Yes
+
+**Primary Lesson:** Behavioral correlation is more informative than evaluating isolated events.
