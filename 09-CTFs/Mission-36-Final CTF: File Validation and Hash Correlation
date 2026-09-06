@@ -1,0 +1,252 @@
+# Mission 36 — Final CTF: File Validation and Hash Correlation
+
+## 🎯 Objective
+
+Investigate a suspiciously named Windows executable and determine whether it represented malicious activity.
+
+The investigation focused on:
+
+* File metadata
+* Digital signatures
+* SHA-256 hashing
+* Hash comparison
+* Binary validation
+* Analyst escalation decisions
+* Distinguishing suspicious appearance from actual malicious behavior
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **User:** Gabriel
+* **Investigation Date:** September 6, 2026
+
+---
+
+# 🧩 CTF Scenario
+
+The SOC identified a potentially suspicious executable:
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe
+```
+
+The filename and location appeared unusual and warranted investigation.
+
+The objective was to determine whether the file was malicious and whether the activity required escalation.
+
+---
+
+# 🔎 Investigation
+
+## 1. File Metadata
+
+The file was inspected using:
+
+```powershell
+Get-Item "C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe" |
+Select-Object FullName, CreationTime, LastWriteTime, Length
+```
+
+### Results
+
+```text
+FullName:
+C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe
+
+CreationTime:
+9/6/2026 11:58:56 AM
+
+LastWriteTime:
+8/12/2026 10:03:56 PM
+
+Length:
+327168 bytes
+```
+
+The filename and location appeared suspicious because the executable was stored in a temporary user directory while using a name resembling a Windows system component.
+
+However, metadata alone was insufficient to determine whether the file was malicious.
+
+---
+
+# 🔐 2. Digital Signature Verification
+
+The file's digital signature was checked using:
+
+```powershell
+Get-AuthenticodeSignature "C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe"
+```
+
+### Result
+
+```text
+Status: Valid
+```
+
+A valid digital signature was identified.
+
+This was a positive indicator, but the signature alone was not treated as proof of legitimacy.
+
+---
+
+# 🔢 3. SHA-256 Hash
+
+The suspicious file was hashed using:
+
+```powershell
+Get-FileHash "C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe" -Algorithm SHA256
+```
+
+### SHA-256
+
+```text
+2A589E0E4A115F04F558C8ABF531DA739ADB3CD1D3296128D0019B99A7046DEE
+```
+
+---
+
+# 🧪 4. Hash Comparison
+
+The SHA-256 hash of the legitimate Windows Notepad executable was obtained:
+
+```powershell
+Get-FileHash "C:\Windows\System32\notepad.exe" -Algorithm SHA256
+```
+
+### Result
+
+```text
+2A589E0E4A115F04F558C8ABF531DA739ADB3CD1D3296128D0019B99A7046DEE
+```
+
+The hashes were identical.
+
+---
+
+# 🧠 Analysis
+
+The suspiciously named executable and the legitimate Windows Notepad executable produced the **exact same SHA-256 hash**.
+
+This establishes that the two files contain the same binary content.
+
+The artifact was therefore determined to be a renamed copy of the legitimate `notepad.exe` binary used for the controlled CTF exercise.
+
+The investigation demonstrated that a filename and location can appear suspicious while the underlying file remains legitimate.
+
+---
+
+# 🚨 Escalation Decision
+
+### ❌ No Escalation
+
+The file was not escalated as malicious because the evidence demonstrated that:
+
+1. The digital signature was valid.
+2. The SHA-256 hash matched the legitimate Windows `notepad.exe`.
+3. The artifact was created as part of a controlled CTF exercise.
+4. No malicious execution, persistence, payload delivery, or security-control modification was identified.
+
+---
+
+# 🧠 Analyst Conclusion
+
+The file:
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe
+```
+
+initially appeared suspicious because of its filename and location.
+
+After validation, however, the artifact was found to have the same SHA-256 hash as:
+
+```text
+C:\Windows\System32\notepad.exe
+```
+
+The evidence therefore supports a **🟢 Benign** classification.
+
+### Final Analyst Statement
+
+> No escalation was required. The suspiciously named executable was determined to be identical to the legitimate Windows `notepad.exe` binary based on matching SHA-256 hashes.
+
+---
+
+# 📚 Lessons Learned
+
+1. File names can be misleading and should not be used as the sole basis for classifying an executable.
+
+2. File location can provide useful context but does not independently prove malicious behavior.
+
+3. Digital signatures are valuable evidence when validating executable files.
+
+4. SHA-256 hashes provide a reliable way to compare binary contents.
+
+5. Matching hashes between two files strongly indicate identical file contents.
+
+6. A suspicious artifact should be validated before escalation whenever circumstances permit.
+
+7. Multiple pieces of evidence should be correlated before assigning a final classification.
+
+8. Controlled lab artifacts can be used to practice real-world malware triage techniques safely.
+
+---
+
+# 🎯 Investigation Workflow
+
+```text
+Identify Suspicious File
+        ↓
+Collect File Metadata
+        ↓
+Check Digital Signature
+        ↓
+Calculate SHA-256
+        ↓
+Hash Known-Good Binary
+        ↓
+Compare Hashes
+        ↓
+Validate Artifact
+        ↓
+Make Escalation Decision
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 36
+**Challenge:** Final CTF — File Validation and Hash Correlation
+**Result:** ✅ Completed
+
+**Suspicious File:**
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\svchost_update.exe
+```
+
+**Digital Signature:** Valid
+
+**SHA-256:**
+
+```text
+2A589E0E4A115F04F558C8ABF531DA739ADB3CD1D3296128D0019B99A7046DEE
+```
+
+**Reference Binary:**
+
+```text
+C:\Windows\System32\notepad.exe
+```
+
+**Hash Match:** ✅ Yes
+
+**Final Classification:** 🟢 Benign
+
+**Escalation:** ❌ No
