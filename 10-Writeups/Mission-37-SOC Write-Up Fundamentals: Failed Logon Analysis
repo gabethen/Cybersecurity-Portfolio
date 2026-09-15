@@ -1,0 +1,127 @@
+# Mission 37 — SOC Write-Up Fundamentals: Failed Logon Analysis
+
+## 🎯 Objective
+
+Practice converting raw Windows security telemetry into a concise, professional SOC analyst write-up.
+
+The exercise focused on:
+
+* Identifying what happened
+* Separating evidence from interpretation
+* Avoiding unsupported conclusions
+* Writing a defensible analyst assessment
+
+---
+
+## 💻 Environment
+
+* **Operating System:** Windows 11
+* **Architecture:** ARM64
+* **Virtualization:** QEMU/UTM
+* **Hostname:** WIN-I6R6VVP4E7I
+* **User:** Gabriel
+* **Investigation Date:** September 2026
+
+---
+
+# 🔎 Investigation Summary
+
+Two Event ID 4625 failed-logon events were reviewed from the Windows Security log.
+
+Both events originated from:
+
+```text
+127.0.0.1
+```
+
+The local loopback address indicates that the authentication activity originated from the workstation itself rather than providing evidence of a remote source based on the reviewed telemetry.
+
+A successful Event ID 4624 logon was also observed in the surrounding activity.
+
+---
+
+# 🧠 Analyst Write-Up
+
+## 1. What Happened?
+
+Two Event ID 4625 failed-logon events were identified on the Windows workstation. Both events originated from `127.0.0.1`, indicating that the authentication attempts were generated locally rather than from a remote source based on the available telemetry.
+
+## 2. What Was Found?
+
+The investigation identified two failed logon attempts followed by a successful Event ID 4624 logon. The failed events originated from the local loopback address, and no remote source IP was identified in the reviewed events.
+
+## 3. Analyst Assessment
+
+The activity was assessed as **benign based on the available evidence**. The observed events indicate local authentication activity, and the reviewed events did not provide evidence of a remote authentication attack or confirmed malicious activity.
+
+---
+
+# 🧠 Analyst Reasoning
+
+A successful Event ID 4624 following one or more Event ID 4625 events does **not**, by itself, prove that the failed attempts were legitimate.
+
+Instead, the assessment was based primarily on:
+
+```text
+Event ID 4625
+      ↓
+Source Address: 127.0.0.1
+      ↓
+Local Authentication Activity
+      ↓
+No Remote Source Identified
+      ↓
+No Confirmed Malicious Activity
+```
+
+This approach avoids treating an individual event as definitive evidence and instead considers the available context.
+
+---
+
+# 📚 Lessons Learned
+
+1. Security write-ups should clearly separate observed facts from analyst interpretation.
+
+2. Event ID 4625 indicates a failed logon, but the event alone does not establish malicious behavior.
+
+3. Event ID 4624 indicates a successful logon but does not automatically prove that preceding failed attempts were benign.
+
+4. Source IP information is important when determining whether authentication activity originated locally or remotely.
+
+5. Analysts should avoid overclaiming when telemetry is incomplete.
+
+6. A strong SOC assessment should state what the evidence supports and acknowledge what it does not prove.
+
+7. Professional security documentation should be concise, chronological, and evidence-based.
+
+---
+
+# 🎯 Write-Up Framework
+
+```text
+WHAT HAPPENED?
+        ↓
+WHAT EVIDENCE WAS FOUND?
+        ↓
+WHAT DOES THE EVIDENCE MEAN?
+        ↓
+WHAT IS THE ANALYST ASSESSMENT?
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 37
+**Challenge:** SOC Write-Up Fundamentals
+**Focus:** Failed Logon Analysis
+**Result:** ✅ Completed
+
+**Events Reviewed:**
+
+* Event ID 4625 — Failed Logon
+* Event ID 4624 — Successful Logon
+
+**Source Address:** `127.0.0.1`
+
+**Final Assessment:** 🟢 Benign based on available evidence
