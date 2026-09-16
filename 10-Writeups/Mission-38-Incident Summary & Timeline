@@ -1,0 +1,177 @@
+# Mission 38 — Incident Summary & Timeline
+
+## 🎯 Objective
+
+Practice converting individual Windows security events into a clear chronological incident timeline and concise analyst summary.
+
+The exercise focused on:
+
+* Building an event timeline
+* Identifying authentication activity
+* Identifying process creation
+* Identifying session termination
+* Separating observed facts from assumptions
+* Writing evidence-based incident summaries
+
+---
+
+## 🧩 Scenario
+
+The following Windows events were identified on a workstation:
+
+```text
+10:14:02 AM — Event ID 4625
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+10:14:05 AM — Event ID 4625
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+10:14:08 AM — Event ID 4624
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+10:14:12 AM — Event ID 4688
+Process: C:\Windows\System32\notepad.exe
+
+10:14:20 AM — Event ID 4634
+Account: Gabriel
+Logon Type: 2
+```
+
+---
+
+# 🕒 Incident Timeline
+
+```text
+10:14:02 AM — Failed interactive logon attempt for Gabriel.
+
+10:14:05 AM — Second failed interactive logon attempt for Gabriel.
+
+10:14:08 AM — Successful interactive logon for Gabriel.
+
+10:14:12 AM — Event ID 4688 recorded creation of a notepad.exe process.
+
+10:14:20 AM — Event ID 4634 recorded termination of the logon session.
+```
+
+---
+
+# 🧠 Incident Summary
+
+## What Happened?
+
+The user account **Gabriel** experienced two failed local interactive logon attempts before successfully authenticating. Following the successful logon, Event ID 4688 recorded the creation of a `notepad.exe` process, and Event ID 4634 later recorded the termination of the associated logon session.
+
+## What Does the Evidence Tell Us?
+
+The evidence establishes a sequence of failed authentication attempts, a successful logon, process creation, and subsequent session termination. However, the available events do not establish why the failed logons occurred, why `notepad.exe` was launched, or whether the session was intentionally ended by the user.
+
+---
+
+# 🔎 Evidence Interpretation
+
+| Event    | Meaning                  |
+| -------- | ------------------------ |
+| **4625** | Failed logon             |
+| **4624** | Successful logon         |
+| **4688** | New process created      |
+| **4634** | Logon session terminated |
+
+The source address for the authentication events was:
+
+```text
+127.0.0.1
+```
+
+This indicates local loopback activity in the provided scenario rather than evidence of a remote source.
+
+---
+
+# 🧠 Analyst Reasoning
+
+The investigation demonstrated the importance of separating **what the telemetry proves** from what an analyst might assume.
+
+For example:
+
+```text
+Observed:
+notepad.exe process was created
+
+Not established:
+Why notepad.exe was launched
+Who initiated the process
+Whether the action was intentional
+```
+
+Likewise:
+
+```text
+Observed:
+Event ID 4634 occurred
+
+Not established:
+Why the session ended
+Whether the user intentionally logged off
+```
+
+---
+
+# 📚 Lessons Learned
+
+1. A timeline helps analysts understand the relationship between individual security events.
+
+2. Event ID 4625 represents a failed logon.
+
+3. Event ID 4624 represents a successful logon.
+
+4. Event ID 4688 records process creation.
+
+5. Event ID 4634 records termination of a logon session.
+
+6. Analysts should avoid attributing motives or intentions that are not supported by the available evidence.
+
+7. Strong incident summaries distinguish observed facts from interpretation.
+
+8. Good SOC documentation explains both **what is known** and **what remains unknown**.
+
+---
+
+# 🎯 Investigation Workflow
+
+```text
+Collect Events
+      ↓
+Order by Time
+      ↓
+Identify Event Types
+      ↓
+Correlate Activity
+      ↓
+Separate Facts From Assumptions
+      ↓
+Write Incident Summary
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 38
+**Challenge:** Incident Summary & Timeline
+**Result:** ✅ Completed
+
+**Primary Events Reviewed:**
+
+* Event ID 4625 — Failed Logon
+* Event ID 4624 — Successful Logon
+* Event ID 4688 — Process Creation
+* Event ID 4634 — Logon Session Termination
+
+**Source Address:** `127.0.0.1`
+
+**Key Lesson:** Build the timeline from the evidence first, then explain what the evidence supports without assuming intent or cause.
