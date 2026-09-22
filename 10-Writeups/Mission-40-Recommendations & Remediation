@@ -1,0 +1,194 @@
+# Mission 40 — Recommendations & Remediation
+
+## 🎯 Objective
+
+Practice developing practical security recommendations based on identified endpoint activity.
+
+The exercise focused on:
+
+* Immediate response actions
+* Investigation and containment
+* Evidence preservation
+* Preventive controls
+* Connecting recommendations directly to observed evidence
+
+---
+
+## 🧩 Scenario
+
+The SOC identified the following activity on a Windows workstation:
+
+```text
+6:45:10 PM — Event ID 4625
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+6:45:14 PM — Event ID 4624
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+6:45:20 PM — Event ID 4688
+Process:
+C:\Users\Gabriel\AppData\Local\Temp\update.exe
+
+6:45:25 PM — Scheduled Task Created
+Task Name: SystemUpdate
+
+6:45:26 PM — Task configured to run as SYSTEM
+```
+
+For this exercise, the activity was assumed to require additional security action.
+
+---
+
+# 🚨 Recommendations
+
+## 1. Immediate Action
+
+Escalate the incident to the appropriate security or incident-response team for further investigation and potential containment of the affected endpoint.
+
+Containment decisions should be based on the results of the investigation rather than automatically isolating the system without additional context.
+
+---
+
+## 2. Investigation & Containment
+
+Investigate the Event ID 4688 process creation associated with:
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\update.exe
+```
+
+Recommended investigative actions include:
+
+* Identify the parent process.
+* Review the command line used to launch the executable.
+* Collect file metadata and calculate a SHA-256 hash.
+* Check the executable's digital signature.
+* Investigate the `SystemUpdate` scheduled task.
+* Determine what executable the task launches.
+* Review the task's creation time and triggers.
+* Determine why the task runs as SYSTEM.
+* Preserve relevant security logs and endpoint artifacts.
+
+---
+
+## 3. Prevention
+
+Recommended preventive measures include:
+
+* Strengthen endpoint monitoring for suspicious process execution.
+* Monitor creation of new scheduled tasks.
+* Alert on scheduled tasks configured to run with SYSTEM privileges when unexpected.
+* Review controls governing persistence mechanisms.
+* Ensure Windows security logging and relevant endpoint telemetry are enabled and retained.
+* Establish alerting for suspicious executable activity within user temporary directories.
+
+---
+
+# 🧠 Recommendation Rationale
+
+The recommendations are directly connected to the observed behavioral chain:
+
+```text
+update.exe
+    ↓
+Process Execution
+    ↓
+Scheduled Task Creation
+    ↓
+SYSTEM Execution
+```
+
+Each stage presents a different investigative opportunity.
+
+```text
+Executable
+→ Validate the file
+
+Process Creation
+→ Determine how it was launched
+
+Scheduled Task
+→ Identify persistence
+
+SYSTEM
+→ Determine privilege context
+
+Security Controls
+→ Prevent recurrence
+```
+
+---
+
+# 📚 Lessons Learned
+
+1. Recommendations should be directly connected to the evidence collected during an investigation.
+
+2. Immediate escalation does not automatically mean the endpoint should be isolated.
+
+3. Analysts should preserve evidence before making changes that could destroy useful forensic information.
+
+4. Event ID 4688 can help identify process execution that requires further investigation.
+
+5. Scheduled tasks can function as persistence mechanisms and should be examined when unexpectedly created.
+
+6. Tasks configured to run as SYSTEM require additional scrutiny because of their elevated execution context.
+
+7. Prevention recommendations should address the specific behavior observed rather than relying only on generic monitoring.
+
+8. Good remediation plans address both the immediate incident and the controls that could reduce recurrence.
+
+---
+
+# 🎯 Recommendation Framework
+
+```text
+Identify Finding
+      ↓
+Assess Risk
+      ↓
+Immediate Response
+      ↓
+Investigate & Preserve Evidence
+      ↓
+Contain
+      ↓
+Improve Preventive Controls
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 40
+**Challenge:** Recommendations & Remediation
+**Result:** ✅ Completed
+
+**Primary Artifact:**
+
+```text
+C:\Users\Gabriel\AppData\Local\Temp\update.exe
+```
+
+**Persistence Mechanism:**
+
+```text
+Scheduled Task: SystemUpdate
+```
+
+**Execution Context:**
+
+```text
+SYSTEM
+```
+
+**Primary Recommendations:**
+
+* Escalate to security/incident response.
+* Investigate and preserve evidence associated with the executable and scheduled task.
+* Strengthen monitoring and controls around process execution and persistence.
+
+**Key Lesson:** Effective remediation connects directly to the evidence and addresses immediate response, investigation, containment, and prevention.
