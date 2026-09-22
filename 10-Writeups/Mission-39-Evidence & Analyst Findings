@@ -1,0 +1,256 @@
+# Mission 39 — Evidence & Analyst Findings
+
+## 🎯 Objective
+
+Practice identifying the most important evidence within a Windows security investigation and explaining what the evidence establishes, what it suggests, and what remains unknown.
+
+The exercise focused on:
+
+* Evidence identification
+* Windows Security Event IDs
+* Evidence interpretation
+* Avoiding unsupported assumptions
+* Determining investigative gaps
+* Writing defensible analyst findings
+
+---
+
+## 🧩 Scenario
+
+The following Windows events were identified:
+
+```text
+6:21:14 PM — Event ID 4625
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+6:21:18 PM — Event ID 4624
+Account: Gabriel
+Logon Type: 2
+Source: 127.0.0.1
+
+6:21:25 PM — Event ID 4688
+New Process:
+C:\Windows\System32\notepad.exe
+
+6:21:31 PM — Event ID 4634
+Account: Gabriel
+Logon Type: 2
+```
+
+---
+
+# 🔎 Key Evidence
+
+Four important pieces of evidence were identified:
+
+### 1. Authentication Result
+
+**Event ID 4625**
+
+Establishes that a logon attempt failed.
+
+**Event ID 4624**
+
+Establishes that a subsequent logon was successful.
+
+---
+
+### 2. Source Address
+
+```text
+127.0.0.1
+```
+
+The loopback address indicates that the authentication activity originated locally rather than providing evidence of a remote source in the scenario.
+
+---
+
+### 3. Process Creation
+
+**Event ID 4688**
+
+Recorded the creation of:
+
+```text
+C:\Windows\System32\notepad.exe
+```
+
+This establishes that a new `notepad.exe` process was created after the successful logon.
+
+The event does not, by itself, establish why the process was launched or who initiated it.
+
+---
+
+### 4. Session Termination
+
+**Event ID 4634**
+
+Established that the logon session was subsequently terminated.
+
+The event does not establish whether the user intentionally logged off or why the session ended.
+
+---
+
+# 🧠 Analyst Findings
+
+The available telemetry establishes the following sequence:
+
+```text
+Failed Logon
+      ↓
+Successful Logon
+      ↓
+notepad.exe Process Creation
+      ↓
+Logon Session Termination
+```
+
+The authentication activity originated from:
+
+```text
+127.0.0.1
+```
+
+Based on the available evidence, the activity cannot be conclusively classified as malicious.
+
+---
+
+# ✅ What Can Be Confirmed?
+
+The investigation can confidently establish that:
+
+* A failed logon attempt occurred.
+* A successful logon followed.
+* The authentication activity originated locally.
+* `notepad.exe` was created as a new process.
+* The associated logon session was later terminated.
+
+---
+
+# ❓ What Remains Unknown?
+
+The available events do not establish:
+
+* Why the initial logon failed
+* Why `notepad.exe` was launched
+* Whether the process was intentionally started by the user
+* Whether another process initiated `notepad.exe`
+* Why the logon session ended
+* Whether the activity was malicious
+
+Additional telemetry would be required before making a definitive determination.
+
+---
+
+# 🚨 Analyst Assessment
+
+### Further Investigation Required
+
+The available evidence is insufficient to determine whether the activity was malicious.
+
+The appropriate approach is to gather additional contextual evidence rather than making a determination based solely on the individual security events.
+
+Potential follow-up evidence could include:
+
+* Process parent/child relationships
+* Command-line information
+* Additional authentication events
+* PowerShell activity
+* User activity
+* Endpoint telemetry
+* File and process metadata
+
+---
+
+# 🧠 Analyst Reasoning
+
+This investigation reinforced an important SOC principle:
+
+> **Evidence should describe what occurred, while the assessment should explain what the evidence supports.**
+
+For example:
+
+```text
+Observed:
+notepad.exe was created.
+
+Not established:
+Why it was launched or whether it was malicious.
+```
+
+Likewise:
+
+```text
+Observed:
+Event ID 4634 occurred.
+
+Not established:
+Whether the user intentionally logged off.
+```
+
+---
+
+# 📚 Lessons Learned
+
+1. Identify the most relevant evidence before forming an assessment.
+
+2. Event ID 4625 indicates a failed logon attempt.
+
+3. Event ID 4624 indicates a successful logon.
+
+4. Event ID 4688 records process creation.
+
+5. Event ID 4634 records termination of a logon session.
+
+6. A local source address does not automatically prove that an activity is legitimate.
+
+7. Process creation does not establish malicious intent by itself.
+
+8. Analysts should distinguish confirmed facts from assumptions.
+
+9. When available evidence is insufficient, the correct response is to identify the investigative gaps and collect additional telemetry.
+
+---
+
+# 🎯 Investigation Workflow
+
+```text
+Identify Evidence
+       ↓
+Interpret Each Event
+       ↓
+Correlate the Timeline
+       ↓
+Separate Facts From Assumptions
+       ↓
+Identify Unknowns
+       ↓
+Determine Additional Evidence Needed
+       ↓
+Make Defensible Assessment
+```
+
+---
+
+## ✅ Final Result
+
+**Mission:** 39
+**Challenge:** Evidence & Analyst Findings
+**Result:** ✅ Completed
+
+**Primary Events Reviewed:**
+
+* Event ID 4625 — Failed Logon
+* Event ID 4624 — Successful Logon
+* Event ID 4688 — Process Creation
+* Event ID 4634 — Session Termination
+
+**Source Address:** `127.0.0.1`
+
+**Primary Finding:** The activity cannot be conclusively classified as malicious from the available evidence.
+
+**Assessment:** 🔎 Further investigation required
+
+**Key Lesson:** A strong analyst documents what the evidence proves, identifies what remains unknown, and avoids conclusions that exceed the available telemetry.
