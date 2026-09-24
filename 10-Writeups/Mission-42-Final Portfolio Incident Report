@@ -1,0 +1,43 @@
+# Mission 42 — Final Portfolio Incident Report
+
+## Incident Summary
+
+The Gabriel account experienced a failed logon attempt at 9:17:02 PM followed by a successful local logon at 9:17:06 PM. At 9:17:12 PM, an unauthorized `update.exe` process was created from the user's temporary directory. Six seconds later, an unauthorized scheduled task named `SystemUpdate` was created and configured to run as SYSTEM, followed by the creation of `cmd.exe`.
+
+## Timeline
+
+* **9:17:02 PM** — Event ID 4625 recorded a failed logon attempt for Gabriel.
+* **9:17:06 PM** — Event ID 4624 recorded a successful local logon for Gabriel.
+* **9:17:12 PM** — Event ID 4688 recorded creation of `C:\Users\Gabriel\AppData\Local\Temp\update.exe`.
+* **9:17:18 PM** — An unauthorized scheduled task named `SystemUpdate` was created.
+* **9:17:19 PM** — The `SystemUpdate` task was configured to run as SYSTEM.
+* **9:17:25 PM** — Event ID 4688 recorded creation of `C:\Windows\System32\cmd.exe`.
+
+## Evidence & Findings
+
+The primary evidence includes:
+
+* **Event ID 4625:** Failed authentication attempt.
+* **Event ID 4624:** Successful local authentication.
+* **Event ID 4688:** Creation of `update.exe` from a temporary user directory.
+* **Scheduled Task:** An unauthorized task named `SystemUpdate` was created.
+* **SYSTEM Execution Context:** The scheduled task was configured to run with SYSTEM privileges.
+* **Event ID 4688:** `cmd.exe` was subsequently created.
+
+The combination of unauthorized executable creation, persistence through a scheduled task, elevated SYSTEM execution, and subsequent command-shell activity represents a significant security concern.
+
+## Analyst Assessment
+
+The activity should be treated as **potentially malicious and escalated for incident response**. The evidence is consistent with an unauthorized execution and persistence sequence. Further investigation is required to determine the source, behavior, scope, and impact of `update.exe` and the `SystemUpdate` task.
+
+## Recommended Actions
+
+1. **Escalate the incident** to the security or incident-response team and evaluate whether the affected endpoint should be contained.
+
+2. **Preserve and investigate evidence**, including `update.exe`, its SHA-256 hash, digital signature, parent process, command line, and the full configuration of the `SystemUpdate` scheduled task.
+
+3. **Review additional telemetry** for related PowerShell, process-creation, authentication, command-shell, and network activity to determine whether additional systems, accounts, or persistence mechanisms are involved.
+
+## Final Analyst Conclusion
+
+The observed sequence contains multiple indicators of unauthorized activity, including executable creation, scheduled-task persistence, SYSTEM-level execution, and subsequent command-shell activity. The evidence warrants escalation and further investigation rather than being treated as normal administrative behavior.
