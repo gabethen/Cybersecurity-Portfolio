@@ -1,0 +1,33 @@
+# Mission 41 — Full SOC Incident Write-Up
+
+## Incident Summary
+
+The Gabriel account experienced a failed logon attempt at 8:42:10 PM followed by a successful logon at 8:42:14 PM. At 8:42:19 PM, Event ID 4688 recorded the creation of `update.exe` from the user's temporary directory. Shortly afterward, a scheduled task named `SystemUpdate` was created and configured to run as SYSTEM.
+
+## Evidence & Findings
+
+The primary evidence includes:
+
+* **Event ID 4625:** Failed logon for Gabriel.
+* **Event ID 4624:** Successful local logon for Gabriel.
+* **Event ID 4688:** Creation of `C:\Users\Gabriel\AppData\Local\Temp\update.exe`.
+* **Scheduled Task:** `SystemUpdate` was created shortly after the executable was launched.
+* **Execution Context:** The scheduled task was configured to run as SYSTEM.
+
+The combination of executable creation, execution, scheduled-task creation, and elevated SYSTEM execution represents a significant security concern.
+
+## Analyst Assessment
+
+The activity should be treated as **unauthorized and potentially malicious** based on the scenario. The creation of an executable in a temporary user directory followed by the creation of a SYSTEM-level scheduled task is consistent with a potential persistence mechanism. Additional investigation is required to determine the executable's origin, behavior, and impact.
+
+## Recommended Actions
+
+1. **Escalate the incident** to the security or incident-response team and consider containment of the affected endpoint.
+
+2. **Preserve and investigate evidence**, including the `update.exe` file, its SHA-256 hash, digital signature, parent process, command line, and the configuration and creation time of the `SystemUpdate` scheduled task.
+
+3. **Review related telemetry** for additional process creation, authentication, PowerShell, network, and persistence activity to determine whether other systems or accounts were affected.
+
+## Analyst Conclusion
+
+The observed activity represents a suspicious sequence involving authentication, executable execution, and SYSTEM-level persistence. The evidence warrants escalation and further investigation rather than being treated as routine user activity.
