@@ -1,5 +1,5 @@
 # Mission 41 — Full SOC Incident Write-Up
-
+ 
 ## Incident Summary
 
 The Gabriel account experienced a failed logon attempt at 8:42:10 PM followed by a successful logon at 8:42:14 PM. At 8:42:19 PM, Event ID 4688 recorded the creation of `update.exe` from the user's temporary directory. Shortly afterward, a scheduled task named `SystemUpdate` was created and configured to run as SYSTEM.
